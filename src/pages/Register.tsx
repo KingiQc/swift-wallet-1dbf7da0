@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { Bitcoin, Eye, EyeOff, Camera, CheckCircle2, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { Bitcoin, Eye, EyeOff, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import FaceVerification from "@/components/FaceVerification";
 import { supabase } from "@/integrations/supabase/client";
 import { detectCurrencyFromPhone } from "@/lib/phone-country";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +20,6 @@ export default function Register() {
   const [step, setStep] = useState<Step>(1);
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: "" });
-  const [faceSteps, setFaceSteps] = useState({ up: false, right: false, left: false, front: false });
   const [pin, setPin] = useState(["", "", "", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,13 +36,8 @@ export default function Register() {
     }
   };
 
-  const simulateFaceStep = (direction: keyof typeof faceSteps) => {
-    setTimeout(() => {
-      setFaceSteps(prev => ({ ...prev, [direction]: true }));
-    }, 800);
-  };
 
-  const allFaceStepsDone = Object.values(faceSteps).every(Boolean);
+
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,38 +155,10 @@ export default function Register() {
           )}
 
           {step === 2 && (
-            <div className="space-y-6">
-              <div className="aspect-square max-w-[240px] mx-auto rounded-2xl bg-muted border-2 border-dashed border-border flex flex-col items-center justify-center gap-3">
-                <Camera className="h-12 w-12 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Camera preview</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {(["up", "right", "left", "front"] as const).map(dir => (
-                  <button
-                    key={dir}
-                    onClick={() => simulateFaceStep(dir)}
-                    disabled={faceSteps[dir]}
-                    className={`flex items-center gap-2 p-3 rounded-lg border transition-all duration-300 text-sm font-medium ${
-                      faceSteps[dir]
-                        ? "border-success/50 bg-success/10 text-success"
-                        : "border-border bg-muted text-muted-foreground hover:border-primary hover:text-primary"
-                    }`}
-                  >
-                    {faceSteps[dir] ? <CheckCircle2 className="h-4 w-4" /> : <div className="h-4 w-4 rounded-full border-2 border-current" />}
-                    Look {dir.charAt(0).toUpperCase() + dir.slice(1)}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-center text-muted-foreground">Tap each direction to simulate face detection</p>
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(1)} className="flex-1">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                </Button>
-                <Button onClick={() => setStep(3)} disabled={!allFaceStepsDone} className="flex-1 glow-primary">
-                  Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <FaceVerification
+              onComplete={() => setStep(3)}
+              onBack={() => setStep(1)}
+            />
           )}
 
           {step === 3 && (
